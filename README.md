@@ -1,12 +1,40 @@
 # EndMinecraftPlus
 基于<a href="https://github.com/iuli-moe/EndMinecraft">EndMinecraft</a>优化修改的Minecraft压测工具
 
-*支持方式:*
-1.单IP MOTD
-2.集群假人
-3.集群假人Tab
-4.Forge协议
-5.AntiCheat自定义MD5
+配置文件：config.properties
+
+```java
+#description
+#Fri Mar 11 23:08:35 CST 2022
+customspam=true #自定义刷屏
+name=NMSL #名称前缀
+debug=false #调试模式（输出聊天发送接收）
+port=25565 #废话
+tab=true #怎么说呢 开就对了
+proxies=http.txt #代理文件
+delay=10 #加入延迟
+custommessage=duke i love u #自定义刷屏内容
+mode=2 #模式 2就对了
+pxtype=http #http/socks
+ip=mc.yuanpi.xyz #废话
+lele=false #超市乐乐(idk)
+spam=true #刷屏
+auto=true #不用管
+
+```
+
+
+
+*支持*
+
+1.自动注册
+
+2.自动识别验证码（某些服务器）
+
+3. 自定义刷屏
+4. 选择代理类型
+5. 从本地载入配置
+6. 送给某人的第二份礼物❤
 
 *修改内容:*
 1.重构大量核心代码
