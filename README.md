@@ -6,20 +6,35 @@
 ```java
 #description
 #Fri Mar 11 23:08:35 CST 2022
+#名称前缀
 name=233
+#调试
 debug=false
+#自定义刷屏
 customspam=true
+#心跳包
 tab=true
+#端口
 port=25565
+#代理类型
 proxies=http.txt
+#刷屏延迟
 delay=10
-custommessage=test
+#自定义刷屏内容
+custommessage=Join ZeroPixel and get MVP++ by free at mc.zeropixel.top
+#只有2
 mode=2
+#ip
 ip=mc.yuanpi.xyz
+#代理类型
 pxtype=http
+#自动识别authme验证码
 captcha=true
+#乐乐
 lele=false
+#刷屏
 spam=true
+#刷屏延迟
 spamdelay=5000
 
 ```
