@@ -101,9 +101,12 @@ public class Utils {
 	}
 
 	public static String getclnmsl() {
-		String msg = getsingleString("啥杀沙莎砂纱", 6) + getsingleString("比必币笔毕碧", 6) + getsingleString("参惨蚕灿惭餐", 6)
-				+ getsingleString("楞愣堎棱", 4) + getsingleString("尼拟妮泥倪逆", 6) + getsingleString("吗骂码嘛马玛", 6)
-				+ getsingleString("四思斯司丝似", 6) + getsingleString("了乐勒辣啦", 5) + getsingleString("是事市匙世式视", 7)
+		String msg = getsingleString("啥杀沙莎砂纱", 6) + getsingleString("比必币笔毕碧", 6) +
+				getsingleString("参惨蚕灿惭餐", 6)
+				+ getsingleString("楞愣堎棱", 4) + getsingleString("尼拟妮泥倪逆", 6) +
+				getsingleString("吗骂码嘛马玛", 6)
+				+ getsingleString("四思斯司丝似", 6) + getsingleString("了乐勒辣啦", 5) +
+				getsingleString("是事市匙世式视", 7)
 				+ getsingleString("不布部步捕补埠", 7) + getsingleString("是事市匙世式视", 7);
 		return msg.toString();
 	}
@@ -115,6 +118,18 @@ public class Utils {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < length; ++i) {
 			int number = random.nextInt(num);
+			sb.append(str.charAt(number));
+		}
+		return sb.toString();
+	}
+
+	public static String getsingleString(String list) {
+		String str = list;
+		Random random = new Random();
+		int length = random.nextInt(1) % (1 - 1 + 1) + 1;
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < length; ++i) {
+			int number = random.nextInt(list.length());
 			sb.append(str.charAt(number));
 		}
 		return sb.toString();

