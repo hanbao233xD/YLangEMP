@@ -18,7 +18,7 @@ customspam=true
 tab=true
 #端口
 port=25565
-#代理类型
+#代理文件
 proxies=http.txt
 #刷屏延迟
 delay=10
