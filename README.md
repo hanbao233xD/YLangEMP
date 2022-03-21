@@ -1,6 +1,8 @@
 # EndMinecraftPlus
 基于<a href="https://github.com/iuli-moe/EndMinecraft">EndMinecraft</a>优化修改的Minecraft压测工具
 
+一个瞎做的官网：https://yuanpi.xyz/
+
 配置文件：config.properties
 
 ```java
