@@ -92,9 +92,6 @@ public class DistributedBotAttack extends IAttack {
 			spammessage = config.getValue("custommessage");
 
 		}
-		if (!config.getBoolean("log")) {
-			System.out.println("[警告]你没有开启日志");
-		}
 
 		mainThread = new Thread(() -> {
 			while (true) {
