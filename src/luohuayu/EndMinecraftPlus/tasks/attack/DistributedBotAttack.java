@@ -301,9 +301,9 @@ public class DistributedBotAttack extends IAttack {
 				}
 				Utils.log("Client", "[断开][" + username + "] " + msg);
 				String reason = e.getReason();
-				boolean status = reason.contains("重") || reason.contains("join") || reason.contains("antibot")
+				boolean stats = reason.contains("重") || reason.contains("join") || reason.contains("antibot")
 						|| reason.contains("加入");
-				if (status) {
+				if (stats) {
 					Utils.log("[" + username + "]正在重连......");
 					client.getSession().connect(true);
 
