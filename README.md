@@ -32,6 +32,8 @@ ip=mc.yuanpi.xyz
 pxtype=http
 #自动识别authme验证码
 captcha=true
+#authme验证码长度
+authmelength
 #乐乐
 lele=false
 #刷屏
@@ -55,8 +57,5 @@ spamdelay=5000
 
 *修改内容:*
 1.重构大量核心代码
-2.大幅度性能优化
+2.大幅度性能负优化
 3.修复Forge协议无法进服
-4.修复AntiCheat特定情况无法进服
-5.增加AntiCheat自定义MD5
-6.移除部分过时功能
