@@ -34,7 +34,7 @@ pxtype=http
 captcha=true
 #authme验证码长度
 authmelength
-#乐乐
+#在攻击前请求motd，以绕过老版本AntiAttack
 lele=false
 #刷屏
 spam=true
