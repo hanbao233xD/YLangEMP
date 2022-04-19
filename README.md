@@ -27,7 +27,7 @@ custommessage=Join ZeroPixel and get MVP++ by free at mc.zeropixel.top
 #只有2
 mode=2
 #ip
-ip=mc.yuanpi.xyz
+ip=mc.mini1.club
 #代理类型
 pxtype=http
 #自动识别authme验证码
