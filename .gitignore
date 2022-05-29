@@ -6,3 +6,5 @@ run.bat
 *.bat
 *.bat
 config.properties
+*.properties
+*.txt

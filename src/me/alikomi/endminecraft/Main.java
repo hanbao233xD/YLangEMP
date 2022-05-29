@@ -38,7 +38,6 @@ public class Main extends Utils {
 
 	private static void getInfo() throws NamingException {
 		config.readconfig("config.properties");
-		config.saveFile("config.properties", "description");
 
 		ip = config.getValue("ip");
 		port = config.toint(config.getValue("port"));

