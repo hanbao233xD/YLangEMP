@@ -40,6 +40,10 @@ lele=false
 spam=true
 #刷屏延迟
 spamdelay=5000
+reconnectdelay=5000
+reconnectbypass=true
+autohh=false
+hhdelay=10000
 
 ```
 
